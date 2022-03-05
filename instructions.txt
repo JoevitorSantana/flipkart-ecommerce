@@ -289,7 +289,7 @@ exports.signin = (req, res) => {
         if(error) return res.status(400).json({error});
         if(user){
             if(user.authenticate(req.body.password)){
-                const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '1h'});
+                const token = jwt.sign({_id: user._id, role: user.role}, process.env.JWT_SECRET, {expiresIn: '1h'});
                 const {_id, firstName, lastName, email, role, fullName} = user;
                 res.status(200).json({
                     token,
@@ -611,3 +611,147 @@ exports.isRequestValidated = (req, res, next) => {
 
 - adicionar as validações como middlewares nas rotas normais e admin
 
+
+-------------------------06 - Categories and subcategories Rest API--------------------------
+
+01 - em models criar o arquivo category.js
+
+const mongoose = require('mongoose');
+
+const categorySchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    slug: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    parentId: {
+        type: String,
+    }
+}, {timestamps: true});
+
+module.exports = mongoose.model('Category', categorySchema);
+
+02 - instalar o slugify
+
+npm install --save slugify
+
+03 - criar o controller category.js
+
+const Category = require('../models/category');
+const slugify = require('slugify');
+
+function createCategories(categories, parentId = null){
+    const categoryList = [];
+    let category;
+    if(parentId == null){
+        category = categories.filter(cat => cat.parentId == undefined);
+    } else {
+        category = categories.filter(cat => cat.parentId == parentId);
+    }
+    
+    for(let cate of category){
+        categoryList.push({
+            _id: cate._id,
+            name: cate.name,
+            slug: cate.slug,
+            children: createCategories(categories, cate._id)
+        });
+    }
+
+    return categoryList;
+}
+
+exports.addCategory = (req, res) => {
+    const categoryObj = {
+        name: req.body.name,
+        slug: slugify(req.body.name)
+    }
+
+    if(req.body.parentId){
+        categoryObj.parentId = req.body.parentId;
+    }
+
+    const cat = new Category(categoryObj);
+    cat.save((error, category) => {
+        if(error) return res.status(400).json({error});
+        if(category){
+            return res.status(201).json({category});
+        }
+    });
+}
+
+exports.getCategories = (req, res) => {
+    Category.find({})
+    .exec((error, categories) => {
+        if(error) retrn res.status(400).json({error});
+
+        if(categories){
+
+            const categoryList = createCategories(categories);
+
+            res.status(200).json({categoryList});
+        }
+    })
+}
+
+03 - criar a pasta middlewares e o arquivo index.js
+
+- colocar o método requireSignIn aqui neste middlewares
+
+const jwt = require('jsonwebtoken');
+
+exports.requireSignIn = (req, res, next) => {
+    if(req.headers.authorization){
+        const token = req.headers.authorization.split(' ')[1];
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = user;        
+    } else {
+        return res.status(400).json({ message: 'Authorization required'});
+    }
+
+    next();
+    
+}
+
+exports.userMiddleware = (req, res, next) => {
+    if(req.user.role !== 'user'){
+        return res.status(400).json({ message: 'User Access denied' })
+    }
+
+    next();
+}
+
+exports.adminMiddleware = (req, res, next) => {
+    if(req.user.role !== 'admin'){
+        return res.status(400).json({ message: 'Admin Access denied' })
+    }
+
+    next();
+}
+
+03 - em routes criar o arquivo de rotas category.js
+
+router.post('/categories/create', requireSignIn, adminMiddleware, addCategory);
+router.get('/categories', getCategories);
+
+module.exports = router;
+
+04 - importar a rota no index.server.js
+
+const categoryRoutes = require('./routes/category');
+
+app.use('/api', categoryRoutes);
+
+05 - testar a rota no insomnia
+
+- criar as categorias
+Eletrônicos
+Esportes, livros e mais
+Homem
+Smartphones(com parentId de eletrônicos)
+Samsung(com parentId de Smartphones)

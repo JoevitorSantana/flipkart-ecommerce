@@ -9,8 +9,5 @@ router.post('/admin/signin', validateSignInRequest, isRequestValidated, signinAd
 
 router.post('/admin/signup', validateSignUpRequest, isRequestValidated, signupAdmin);
 
-router.get('/profile', requireSignIn, (req, res) => {
-    res.status(200).json({ user: 'profile'})
-})
 
 module.exports = router;

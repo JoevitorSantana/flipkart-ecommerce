@@ -20,8 +20,8 @@ exports.validateSignInRequest = [
     .isEmail()
     .withMessage('valid email is required'),
     check('password')
-    .isLength({min: 6})
-    .withMessage('password must be at least 6 character long')
+    .isLength()
+    .withMessage('password required')
 ];
 
 exports.isRequestValidated = (req, res, next) => {
