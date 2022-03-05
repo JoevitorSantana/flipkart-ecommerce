@@ -333,4 +333,233 @@ if(user.authenticate(req.body.password) && user.role === 'admin')
 09 - realizar criar a pasta admin em routes e copiar o arquivo auth.js pra lá adicionar admin antes ds rotas
 
 
+--------------------------04 - Admin App setup Layout-------------------------
 
+01 - Criar o projeto front-end
+
+npx create-react-app admin-app
+
+- no arquivo package.json em scripts modificar:
+
+"start":"set PORT=4000 && react-scripts start", //para linux colocar somente o PORT=4000
+
+02 - instalar o react bootstrap
+
+*versões do vídeo
+- bootstrap@4.5.2
+- react-bootstrap@1.3.0
+
+npm install react-bootstrap bootstrap --save
+
+- instalar também o react-router-dom
+
+*versões do vídeo
+- @5.2.0
+
+npm install --save react-router-dom
+
+03 - ir no Google fonts selecionar a fonte Open Sans nos tamanho 300, 400, 600 e 700 e copiar o link para o index.html da pasta public
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+- também no index.html copiar o link do cdn de estilização do react-bootstrap
+
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+  integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+  crossorigin="anonymous"
+/>
+
+04 - criar a pasta components com as subpastas Layout e Header
+
+05 - dentro da pasta Header criar o arquivo index.js
+
+import React from 'react';
+
+export function Header(props){
+    return(
+        <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+            <Container>
+                {/*<Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>*/}
+                <Link to="/" className="navbar-brand">Admin dashboard</Link>
+                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+                <Navbar.Collapse id="responsive-navbar-nav">
+                    <Nav className="mr-auto">
+                        <Nav.Link href="#features">Features</Nav.Link>
+                        <Nav.Link href="#pricing">Pricing</Nav.Link>
+                        {/*<NavDropdown title="Dropdown" id="collasible-nav-dropdown">
+                            <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                            <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+                            <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                        </NavDropdown>*/}
+                    </Nav>
+                    <Nav>
+                        {/*<Nav.Link href="#deets">More deets</Nav.Link>*/}     
+
+                        <li className="nav-item">
+                            <NavLink to="signin className="nav-link">SignIn</NavLink>
+                        </li>
+
+                        <li className="nav-item">
+                            <NavLink to="signup className="nav-link">SignUp</NavLink>
+                        </li>
+
+                    </Nav>
+                </Navbar.Collapse>        
+            </Container>
+        </Navbar>
+    )
+}
+
+- dar uma limpada neste header conforme o vídeo
+
+06 - Na pasta Layout criar o arquivo index.js
+
+export function Layout(props){
+    return(
+        <Header />
+        {props.children}
+    )
+}
+
+07 - em /src criar a pasta container e as subpastas Home, SignIn e SignUp e em cada subpasta desta criar o arquivo index.js
+
+08 - no arquivo App.js adicionar o BrowserRouter
+
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+<Router>
+    <Switch>
+        <Route path="/" exact component={Home} />
+        <Route path="/signin" component={SignIn} />
+        <Route path="/signup" component={SignUp} />
+    </Switch>
+</Router>
+
+09 - em index.css substituir o font-family por
+
+font-family: 'Open Sans', 'sans-serif';
+
+10 - no arquivo da página Home adicionar
+
+export function Home(){
+    return(
+        <Layout>
+            <Jumbotron style={{margin: 5rem, background: '#fff'}} className="text-center">
+                <h1>Bem-vindo ao painel de administração</h1>            
+            </Jumbotron>
+        </Layout>
+    )
+}
+
+11 - no arquivo da página SignIn
+
+export function SignIn(){
+    return(
+        <Layout>
+            <Container>     
+                <Row style={{marginTop: '50px'}}>
+                    <Col md={{span: 6, offset: 3}}>
+                        <Form>
+                            <Form.Group controlId="formBasicEmail">
+                                <Form.Label>Email address</Form.Label>
+                                <Form.Control type="email" placeholder="Enter email" />
+                                <Form.Text className="text-muted">
+                                We'll never share your email with anyone else.
+                                </Form.Text>
+                            </Form.Group>
+
+                            <Form.Group controlId="formBasicPassword">
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control type="password" placeholder="Password" />
+                            </Form.Group>                            
+                            <Button variant="primary" type="submit">
+                                Submit
+                            </Button>
+                        </Form>                    
+                    </Col>
+                </Row>       
+            </Container>
+        </Layout>
+    );
+}
+
+12 - na pasta componentes criar a pasta UI com a subpasta Input e arquivo index.js
+
+export function Input(props){
+    return(
+        <Form.Group controlId="formBasicEmail">
+            <Form.Label>{props.label}</Form.Label>
+            <Form.Control 
+                type={props.type} 
+                placeholder={props.placeholder}
+                value={props.value}
+                onChange={props.onChange}
+            />
+            <Form.Text className="text-muted">
+            {props.errorMessage}
+            </Form.Text>
+        </Form.Group>
+    );
+};
+
+12 - na página de SignUp
+
+export function SignUp(){
+    return(
+        <Layout>
+            <Container>     
+                <Row style={{marginTop: '50px'}}>
+                    <Col md={{span: 6, offset: 3}}>
+                        <Form>
+                            <Row>
+                                <Col md={6}>
+                                    <Input /
+                                        type="text"
+                                        placeholder="Primeiro nome"
+                                        label="Primeiro nome"
+                                        value=""
+                                        onChange={() => {}}
+                                    >                                   
+                                </Col>
+                                <Col md={6}>
+                                    <Input /
+                                        type="text"
+                                        placeholder="Sobrenome"
+                                        label="Sobrenome"
+                                        value=""
+                                        onChange={() => {}}
+                                    >                                   
+                                </Col>
+                            </Row>
+                            <Input 
+                                type="email"
+                                label="Email"
+                                placeholder="Digite um email"
+                                value=""
+                                onChange={() => {}}
+                            />         
+
+                            <Input 
+                                type="password"
+                                label="Senha"
+                                placeholder="Digite uma senha"
+                                value=""
+                                onChange={() => {}}
+                            />   
+                                                     
+                            <Button variant="primary" type="submit">
+                                Enviar
+                            </Button>
+                        </Form>                    
+                    </Col>
+                </Row>       
+            </Container>
+        </Layout>
+    );
+}
